@@ -97,7 +97,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
 	#endif
 	surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
 	surface.depth = -TransformWorldToView(input.positionWS).z;
-	GI gi = GetGI(GI_FRAGMENT_DATA(input));
+	GI gi = GetGI(GI_FRAGMENT_DATA(input), surface);
 	float3 color = GetLighting(surface, brdf, gi);
 	return float4(color, surface.alpha);
 }

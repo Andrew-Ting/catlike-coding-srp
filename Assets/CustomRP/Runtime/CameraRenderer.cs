@@ -61,7 +61,8 @@ public partial class CameraRenderer
         {
             enableDynamicBatching = useDynamicBatching,
             enableInstancing = useGPUInstancing,
-            perObjectData = PerObjectData.Lightmaps // instructs the pipeline to send UV coords for light maps to the shaders; lightmapped objects have the LIGHTMAP_ON keyword in their shader variant
+            perObjectData = PerObjectData.Lightmaps | PerObjectData.LightProbe |
+                PerObjectData.LightProbeProxyVolume// instructs the pipeline to send UV coords for light maps and light probes to the shaders; lightmapped objects have the LIGHTMAP_ON keyword in their shader variant
         };
         drawingSettings.SetShaderPassName(1, litShaderTagId);
         var filteringSettings = new FilteringSettings(RenderQueueRange.opaque); // indicate which render queues are rendered in the next drawrenderers call
