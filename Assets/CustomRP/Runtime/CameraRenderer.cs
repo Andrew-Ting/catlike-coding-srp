@@ -60,7 +60,8 @@ public partial class CameraRenderer
         var drawingSettings = new DrawingSettings(unlitShaderTagId, sortingSettings)
         {
             enableDynamicBatching = useDynamicBatching,
-            enableInstancing = useGPUInstancing
+            enableInstancing = useGPUInstancing,
+            perObjectData = PerObjectData.Lightmaps // instructs the pipeline to send UV coords for light maps to the shaders; lightmapped objects have the LIGHTMAP_ON keyword in their shader variant
         };
         drawingSettings.SetShaderPassName(1, litShaderTagId);
         var filteringSettings = new FilteringSettings(RenderQueueRange.opaque); // indicate which render queues are rendered in the next drawrenderers call

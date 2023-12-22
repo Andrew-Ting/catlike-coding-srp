@@ -1,6 +1,7 @@
 #include "../CustomRP/ShaderLibrary/Common.hlsl"
 #include "../CustomRP/ShaderLibrary/Surface.hlsl"
 #include "../CustomRP/ShaderLibrary/Shadows.hlsl"
+#include "../CustomRP/ShaderLibrary/GI.hlsl"
 #include "../CustomRP/ShaderLibrary/Light.hlsl"
 #include "../CustomRP/ShaderLibrary/BRDF.hlsl"
 #include "../CustomRP/ShaderLibrary/Lighting.hlsl"
@@ -8,6 +9,19 @@
 #ifndef CUSTOM_LIT_PASS_INCLUDED
 #define CUSTOM_LIT_PASS_INCLUDED
 
+#if defined(LIGHTMAP_ON)
+	#define GI_ATTRIBUTE_DATA float2 lightMapUV : TEXCOORD1;
+	#define GI_VARYINGS_DATA float2 lightMapUV : VAR_LIGHT_MAP_UV;
+	#define TRANSFER_GI_DATA(input, output) \
+		output.lightMapUV = input.lightMapUV * \
+		unity_LightmapST.xy + unity_LightmapST.zw;
+	#define GI_FRAGMENT_DATA(input) input.lightMapUV
+#else
+	#define GI_ATTRIBUTE_DATA // empty definition means deleted at compile time
+	#define GI_VARYINGS_DATA
+	#define TRANSFER_GI_DATA(input, output)
+	#define GI_FRAGMENT_DATA(input) 0.0
+#endif
 
 TEXTURE2D(_BaseMap); // texture handle
 SAMPLER(sampler_BaseMap); // controls how texture is sampled (e.g. wrap and filter modes)
@@ -31,7 +45,8 @@ struct Attributes {
 	float3 positionOS : POSITION;
 	float3 normalOS : NORMAL;
 	float2 baseUV : TEXCOORD0;
-	UNITY_VERTEX_INPUT_INSTANCE_ID
+	GI_ATTRIBUTE_DATA // macro to store light map
+	UNITY_VERTEX_INPUT_INSTANCE_ID // contains GPU instancing object index
 };
 
 struct Varyings {
@@ -39,6 +54,7 @@ struct Varyings {
 	float3 positionWS : VAR_POSITION;
 	float3 normalWS : VAR_NORMAL;
 	float2 baseUV : VAR_BASE_UV; // can apply any unused identifier as this is just a passed along value (requires no special attention). "VAR_BASE_UV" is arbitrary
+	GI_VARYINGS_DATA
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -47,6 +63,7 @@ Varyings LitPassVertex(Attributes input)  {
 	Varyings output;
 	UNITY_SETUP_INSTANCE_ID(input);
 	UNITY_TRANSFER_INSTANCE_ID(input, output);
+	TRANSFER_GI_DATA(input, output);
 	output.positionWS = TransformObjectToWorld(input.positionOS.xyz);
 	output.positionCS = TransformWorldToHClip(output.positionWS);
 	output.normalWS = TransformObjectToWorldNormal(input.normalOS);
@@ -80,7 +97,8 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
 	#endif
 	surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
 	surface.depth = -TransformWorldToView(input.positionWS).z;
-	float3 color = GetLighting(surface, brdf);
+	GI gi = GetGI(GI_FRAGMENT_DATA(input));
+	float3 color = GetLighting(surface, brdf, gi);
 	return float4(color, surface.alpha);
 }
 
