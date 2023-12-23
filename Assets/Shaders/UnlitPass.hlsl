@@ -3,21 +3,9 @@
 #ifndef CUSTOM_UNLIT_PASS_INCLUDED
 #define CUSTOM_UNLIT_PASS_INCLUDED
 
-
-TEXTURE2D(_BaseMap); // texture handle
-SAMPLER(sampler_BaseMap); // controls how texture is sampled (e.g. wrap and filter modes)
-
-
 //CBUFFER_START(UnityPerMaterial) // required to allow SRP batching; CBUFFER_START and CBUFFER_END are in core RP and equivalent to "cbuffer UnityPerMaterial {float _BaseColor; };" but handles platform incompatibility
 //	float4 _BaseColor;
 //CBUFFER_END
-
-UNITY_INSTANCING_BUFFER_START(UnityPerMaterial) // equivalent to above but supports GPU instancing
-	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST) // tiling and offset of texture
-	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
-	UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
-UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
-
 
 struct Attributes {
 	float3 positionOS : POSITION;

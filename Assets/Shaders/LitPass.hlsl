@@ -1,4 +1,3 @@
-#include "../CustomRP/ShaderLibrary/Common.hlsl"
 #include "../CustomRP/ShaderLibrary/Surface.hlsl"
 #include "../CustomRP/ShaderLibrary/Shadows.hlsl"
 #include "../CustomRP/ShaderLibrary/GI.hlsl"
@@ -23,21 +22,11 @@
 	#define GI_FRAGMENT_DATA(input) 0.0
 #endif
 
-TEXTURE2D(_BaseMap); // texture handle
-SAMPLER(sampler_BaseMap); // controls how texture is sampled (e.g. wrap and filter modes)
 
 
 //CBUFFER_START(UnityPerMaterial) // required to allow SRP batching; CBUFFER_START and CBUFFER_END are in core RP and equivalent to "cbuffer UnityPerMaterial {float _BaseColor; };" but handles platform incompatibility
 //	float4 _BaseColor;
 //CBUFFER_END
-
-UNITY_INSTANCING_BUFFER_START(UnityPerMaterial) // equivalent to above but supports GPU instancing
-	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST) // tiling and offset of texture
-	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
-	UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
-	UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
-	UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
-UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 float3 _WorldSpaceCameraPos;
 
@@ -68,17 +57,15 @@ Varyings LitPassVertex(Attributes input)  {
 	output.positionCS = TransformWorldToHClip(output.positionWS);
 	output.normalWS = TransformObjectToWorldNormal(input.normalOS);
 	float4 baseST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseMap_ST);
-	output.baseUV = input.baseUV * baseST.xy + baseST.zw; // xy contains scale, zw contains offset
+	output.baseUV = TransformBaseUV(input.baseUV); 
 	return output;
 }
 
 float4 LitPassFragment(Varyings input) : SV_TARGET {
 	UNITY_SETUP_INSTANCE_ID(input);
-	float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
-	float4 baseColor = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
-	float4 base = baseMap * baseColor;
+	float4 base = GetBase(input.baseUV);
 	#if defined(_CLIPPING)
-		clip(base.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff));
+		clip(base.a - GetCutoff(input.baseUV));
 	#endif
 
 	Surface surface;
@@ -86,9 +73,8 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
 	surface.normal = normalize(input.normalWS);
 	surface.color = base.rgb;
 	surface.alpha = base.a;
-	surface.metallic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metallic);
-	surface.smoothness =
-		UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
+	surface.metallic = GetMetallic(input.baseUV);
+	surface.smoothness = GetSmoothness(input.baseUV);
 	surface.dither = InterleavedGradientNoise(input.positionCS.xy, 0); // InterleavedGradientNoise comes from the Core RP library, and its first param is the screen-space XY position (which = clip space XY position in the fragment shader). Second param is to animate the noise over time (static is zero)
 	#if defined(_PREMULTIPLY_ALPHA)
 		BRDF brdf = GetBRDF(surface, true);

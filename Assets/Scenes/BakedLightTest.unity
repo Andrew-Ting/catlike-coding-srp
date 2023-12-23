@@ -1403,7 +1403,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 1.08e-43, z: 0, w: -1.5640957e-37}
+  m_BoundingSphereOverride: {x: 7.54e-43, y: 6e-44, z: 2.1e-44, w: 5.298e-42}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -1435,6 +1435,7 @@ GameObject:
   - component: {fileID: 1967507695}
   - component: {fileID: 1967507694}
   - component: {fileID: 1967507693}
+  - component: {fileID: 1967507697}
   m_Layer: 0
   m_Name: Cube (4)
   m_TagString: Untagged
@@ -1476,7 +1477,7 @@ MeshRenderer:
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
   m_MotionVectors: 1
-  m_LightProbeUsage: 1
+  m_LightProbeUsage: 2
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
@@ -1522,12 +1523,32 @@ Transform:
   m_GameObject: {fileID: 1967507692}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.885, y: 3.632, z: 2.625}
+  m_LocalPosition: {x: 0.885, y: 3.632, z: 3.037}
   m_LocalScale: {x: 0.3, y: 0.3, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!259 &1967507697
+LightProbeProxyVolume:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1967507692}
+  m_Enabled: 1
+  m_BoundingBoxMode: 0
+  m_ResolutionX: 2
+  m_ResolutionY: 2
+  m_ResolutionZ: 8
+  m_ResolutionProbesPerUnit: 0.25
+  m_BoundingBoxSize: {x: Infinity, y: Infinity, z: Infinity}
+  m_BoundingBoxOrigin: {x: 0, y: 0, z: 0}
+  m_ResolutionMode: 1
+  m_ProbePositionMode: 0
+  m_RefreshMode: 0
+  m_QualityMode: 1
+  m_DataFormat: 1
 --- !u!1 &2054011062
 GameObject:
   m_ObjectHideFlags: 0

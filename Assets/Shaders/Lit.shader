@@ -16,7 +16,12 @@ Shader "Custom RP/Lit" {
 	}
 	
 	SubShader {
-		
+
+		HLSLINCLUDE // includes the files at the start of all passes
+		#include "../CustomRP/ShaderLibrary/Common.hlsl"
+		#include "LitInput.hlsl"
+		ENDHLSL
+
 		Pass {
 			Tags {
 				"LightMode" = "CustomLit"
@@ -52,6 +57,21 @@ Shader "Custom RP/Lit" {
 			#pragma vertex ShadowCasterPassVertex
 			#pragma fragment ShadowCasterPassFragment
 			#include "ShadowCasterPass.hlsl"
+			ENDHLSL
+		}
+
+		Pass {
+			Tags {
+				"LightMode" = "Meta"
+			}
+
+			Cull Off
+
+			HLSLPROGRAM
+			#pragma target 3.5
+			#pragma vertex MetaPassVertex
+			#pragma fragment MetaPassFragment
+			#include "MetaPass.hlsl"
 			ENDHLSL
 		}
 	}
