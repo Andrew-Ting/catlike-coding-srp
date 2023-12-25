@@ -23,6 +23,9 @@ public class MeshBall : MonoBehaviour
         metallic = new float[1023],
         smoothness = new float[1023];
 
+    [SerializeField]
+    LightProbeProxyVolume lightProbeVolume = null;
+
     void Awake()
     {
         GraphicsSettings.useScriptableRenderPipelineBatching = true;
@@ -48,9 +51,24 @@ public class MeshBall : MonoBehaviour
             block.SetVectorArray(baseColorId, baseColors);
             block.SetFloatArray(metallicId, metallic);
             block.SetFloatArray(smoothnessId, smoothness);
+
+            if (!lightProbeVolume) // only compute light probes when they are customprovided, not when we are using proxy volumes
+            {
+                var positions = new Vector3[1023];
+                for (int i = 0; i < matrices.Length; i++)
+                {
+                    positions[i] = matrices[i].GetColumn(3); // grab positions of all GPU instanced spheres in 3D space
+                }
+                var lightProbes = new SphericalHarmonicsL2[1023];
+                LightProbes.CalculateInterpolatedLightAndOcclusionProbes(
+                    positions, lightProbes, null
+                );
+                block.CopySHCoefficientArraysFrom(lightProbes);
+            }
         }
 
         // only defined when GPU instancing is enabled
-        Graphics.DrawMeshInstanced(mesh, 0, material, matrices, 1023, block); // draws in order of array data (no sorting); no culling, but will disappear when completely out of view frustum
+        Graphics.DrawMeshInstanced(mesh, 0, material, matrices, 1023, block, ShadowCastingMode.On, true, 0, null, lightProbeVolume ?
+                LightProbeUsage.UseProxyVolume : LightProbeUsage.CustomProvided, lightProbeVolume); // draws in order of array data (no sorting); no culling, but will disappear when completely out of view frustum
     }
 }

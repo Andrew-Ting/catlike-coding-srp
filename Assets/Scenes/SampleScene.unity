@@ -616,7 +616,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &695382583
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -631,6 +631,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   material: {fileID: 2100000, guid: e5b79a1893774c14f9a363cea7d7c149, type: 2}
+  lightProbeVolume: {fileID: 0}
 --- !u!4 &695382584
 Transform:
   m_ObjectHideFlags: 0
