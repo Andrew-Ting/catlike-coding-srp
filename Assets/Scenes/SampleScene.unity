@@ -1711,6 +1711,7 @@ MonoBehaviour:
   metallic: 0
   smoothness: 0.5
   baseColor: {r: 0.45098042, g: 0.7685146, b: 1, a: 1}
+  emissionColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!136 &1305939860
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1929,6 +1930,7 @@ MonoBehaviour:
   metallic: 0
   smoothness: 0.5
   baseColor: {r: 0.45098042, g: 0.7685146, b: 1, a: 1}
+  emissionColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!136 &1477297709
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -2456,10 +2458,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bed2af3e0bf17aa40a21fe3c2d43c5b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cutoff: 0.5
+  cutoff: 0.516
   metallic: 0
-  smoothness: 0.5
-  baseColor: {r: 1, g: 0.4509804, b: 0.4509804, a: 1}
+  smoothness: 0.555
+  baseColor: {r: 1, g: 0.48742133, b: 0.48742133, a: 1}
+  emissionColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!136 &1704939343
 CapsuleCollider:
   m_ObjectHideFlags: 0

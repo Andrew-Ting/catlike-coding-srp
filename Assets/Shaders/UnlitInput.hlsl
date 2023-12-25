@@ -33,5 +33,8 @@ float GetSmoothness (float2 baseUV) {
 	return 0.0;
 }
 
+float3 GetEmission (float2 baseUV) { // baking an unlit object emits its full color (since it just returns the base texture)
+	return GetBase(baseUV).rgb;
+}
 
 #endif

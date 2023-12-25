@@ -2,11 +2,13 @@
 #define CUSTOM_LIT_INPUT_INCLUDED
 
 TEXTURE2D(_BaseMap); // texture handle
+TEXTURE2D(_EmissionMap);
 SAMPLER(sampler_BaseMap); // controls how texture is sampled (e.g. wrap and filter modes)
 
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
+	UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
 	UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
 	UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
 	UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
@@ -21,6 +23,12 @@ float4 GetBase (float2 baseUV) {
 	float4 map = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, baseUV);
 	float4 color = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
 	return map * color;
+}
+
+float3 GetEmission (float2 baseUV) {
+	float4 map = SAMPLE_TEXTURE2D(_EmissionMap, sampler_BaseMap, baseUV);
+	float4 color = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _EmissionColor);
+	return map.rgb * color.rgb;
 }
 
 float GetCutoff (float2 baseUV) {

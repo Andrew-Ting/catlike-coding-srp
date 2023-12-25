@@ -2,7 +2,7 @@ Shader "Custom RP/Unlit" {
 	
 	Properties {
 		_BaseMap("Texture", 2D) = "white" {} // {} used to control texture settings, only kept now to prevent errors
-		_BaseColor("Color", Color) = (1.0, 1.0, 1.0, 1.0)
+		[HDR] _BaseColor("Color", Color) = (1.0, 1.0, 1.0, 1.0)
 		_Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Src Blend", Float) = 1
 		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Dst Blend", Float) = 0
