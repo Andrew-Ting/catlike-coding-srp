@@ -18,13 +18,6 @@ public class Shadows
         public float nearPlaneOffset;
     }
 
-    struct DirectionalShadowData
-    {
-        float strength;
-        int tileIndex;
-        float normalBias;
-    };
-
     ShadowedDirectionalLight[] ShadowedDirectionalLights =
         new ShadowedDirectionalLight[maxShadowedDirectionalLightCount];
 
@@ -250,10 +243,11 @@ public class Shadows
         cascadeCullingSpheres[index] = cullingSphere;
     }
 
-    public Vector3 ReserveDirectionalShadows(Light light, int visibleLightIndex) { // reserves space in the shadow atlas for the light shadow map and store information to render it
+    public Vector4 ReserveDirectionalShadows(Light light, int visibleLightIndex) { // reserves space in the shadow atlas for the light shadow map and store information to render it
         if (ShadowedDirectionalLightCount < maxShadowedDirectionalLightCount &&
             light.shadows != LightShadows.None && light.shadowStrength > 0f) // don't render shadows for cameras where strength is 0 or shadow set to "None," or if we hit shadow limit, or if the light only affects objects beyond max shadow distance (GetShadowCasterBounds)
-        { 
+        {
+            float maskChannel = -1;
             LightBakingOutput lightBaking = light.bakingOutput;
             if (
                 lightBaking.lightmapBakeType == LightmapBakeType.Mixed &&
@@ -261,13 +255,14 @@ public class Shadows
             ) // shadow masks only used when shadow mask is enabled for mixed lights
             {
                 useShadowMask = true;
+                maskChannel = lightBaking.occlusionMaskChannel;
             }
 
             if (!cullingResults.GetShadowCasterBounds(
                 visibleLightIndex, out Bounds b
             )) // GetShadowCasterBounds returns true when the bounds are valid. It is invalid when there are no shadows to render for the light in the culling spheres, in which case we sample baked shadows
-            { // only need shadow strength when there are no realtime shadows in the culling spheres, since we're just reading the shadow mask
-                return new Vector3(-light.shadowStrength, 0f, 0f);
+            { // only need shadow strength and shadow mask index when there are no realtime shadows in the culling spheres, since we're just reading the shadow mask
+                return new Vector4(-light.shadowStrength, 0f, 0f, maskChannel);
             }
 
             ShadowedDirectionalLights[ShadowedDirectionalLightCount] =
@@ -277,12 +272,12 @@ public class Shadows
                     slopeScaleBias = light.shadowBias,
                     nearPlaneOffset = light.shadowNearPlane
                 };
-            return new Vector3(
+            return new Vector4(
                 light.shadowStrength, settings.directional.cascadeCount * ShadowedDirectionalLightCount++,
-                light.shadowNormalBias
+                light.shadowNormalBias, maskChannel
             );
         }
-        return Vector3.zero;
+        return new Vector4(0f, 0f, 0f, -1f);
     }
 
     public void Cleanup()
