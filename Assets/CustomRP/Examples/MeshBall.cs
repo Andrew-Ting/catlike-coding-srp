@@ -60,8 +60,9 @@ public class MeshBall : MonoBehaviour
                     positions[i] = matrices[i].GetColumn(3); // grab positions of all GPU instanced spheres in 3D space
                 }
                 var lightProbes = new SphericalHarmonicsL2[1023];
+                var occlusionProbes = new Vector4[1023];
                 LightProbes.CalculateInterpolatedLightAndOcclusionProbes(
-                    positions, lightProbes, null
+                    positions, lightProbes, occlusionProbes
                 );
                 block.CopySHCoefficientArraysFrom(lightProbes);
             }

@@ -97,7 +97,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: 3bf20c913f168984490c9d5184761a48, type: 2}
   m_LightingSettings: {fileID: 4890085278179872738, guid: 75515a5f866240f4a875d2715ed31ea3, type: 2}
 --- !u!196 &4
 NavMeshSettings:
@@ -1110,13 +1110,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1273148613}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: 0, y: 4.6, z: 10.18}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &1397336256
 GameObject:
   m_ObjectHideFlags: 0
@@ -1508,7 +1508,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 1.1e-44, z: 0, w: 1.6114932e-38}
+  m_BoundingSphereOverride: {x: 1.02e-43, y: 3e-45, z: 5.62e-42, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -1522,7 +1522,7 @@ Transform:
   m_GameObject: {fileID: 1867692677}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7214575, y: 0.09093208, z: 0.13168792, w: 0.67371273}
-  m_LocalPosition: {x: 0, y: 5.48, z: 0}
+  m_LocalPosition: {x: 0, y: 6.93, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1545,7 +1545,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!259 &1916775671
 LightProbeProxyVolume:
   m_ObjectHideFlags: 0

@@ -8,6 +8,8 @@ float4x4 unity_WorldToObject;
 float4 unity_LODFade; // necessary to make SRP batcher compatible. Otherwise "builtin property offset in cbuffer overlap other stages (UnityPerDraw) is returned"
 real4 unity_WorldTransformParams;
 
+float4 unity_ProbesOcclusion; // contains the shadow mask data interpolated across light probes, which Unity calls "occlusion probes"
+
 float4 unity_LightmapST; // xy is the scale to the light map, zw is the offset in the light map
 float4 unity_DynamicLightmapST; // deprecated, only here for SRP compatibility
 

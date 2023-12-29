@@ -38,10 +38,17 @@ struct DirectionalShadowData { // per light
 	float normalBias;
 };
 
+struct ShadowMask {
+	bool always;
+	bool distance; // whether or nor distance shadow mask is enabled
+	float4 shadows;
+};
+
 struct ShadowData { // per fragment
 	int cascadeIndex;
 	float cascadeBlend; // blend across cascades
 	float strength;
+	ShadowMask shadowMask;
 };
 
 float FadedShadowStrength (float distance, float scale, float fade) { // fade between different shadow cascades
@@ -50,6 +57,9 @@ float FadedShadowStrength (float distance, float scale, float fade) { // fade be
 
 ShadowData GetShadowData (Surface surfaceWS) {
 	ShadowData data;
+	data.shadowMask.always = false;
+	data.shadowMask.distance = false; // only temporary initialization; setting the shadow mask is the responsibility of GI as it is part of baked lighting
+	data.shadowMask.shadows = 1.0;
 	data.cascadeBlend = 1.0;
 	data.strength = FadedShadowStrength(
 		surfaceWS.depth, _ShadowDistanceFade.x, _ShadowDistanceFade.y
@@ -112,14 +122,9 @@ float FilterDirectionalShadow (float3 positionSTS) {
 	#endif
 }
 
-float GetDirectionalShadowAttenuation (DirectionalShadowData directional, ShadowData global, Surface surfaceWS) { // sample the right position of the shadow map
-	#if !defined(_RECEIVE_SHADOWS)
-		return 1.0;
-	#endif
-	
-	if (directional.strength <= 0.0) { // lerp extrapolates, so we need to return clamped value 1 when strength is < 0
-		return 1.0;
-	}
+float GetCascadedShadow (
+	DirectionalShadowData directional, ShadowData global, Surface surfaceWS
+) {
 	float3 normalBias = surfaceWS.normal * (directional.normalBias * _CascadeData[global.cascadeIndex].y); // increase normal by texel size to remove some shadow acne
 	float3 positionSTS = mul(
 		_DirectionalShadowMatrices[directional.tileIndex],
@@ -137,7 +142,55 @@ float GetDirectionalShadowAttenuation (DirectionalShadowData directional, Shadow
 			FilterDirectionalShadow(positionSTS), shadow, global.cascadeBlend
 		);
 	}
-	return lerp(1.0, shadow, directional.strength);
+	return shadow;
+}
+
+float GetBakedShadow (ShadowMask mask) {
+	float shadow = 1.0;
+	if (mask.always || mask.distance) {
+		shadow = mask.shadows.r;
+	}
+	return shadow;
+}
+
+float GetBakedShadow (ShadowMask mask, float strength) {
+	if (mask.always || mask.distance) {
+		return lerp(1.0, GetBakedShadow(mask), strength);
+	}
+	return 1.0;
+}
+
+float MixBakedAndRealtimeShadows (
+	ShadowData global, float shadow, float strength
+) {
+	float baked = GetBakedShadow(global.shadowMask);
+	if (global.shadowMask.always) {
+		shadow = lerp(1.0, shadow, global.strength); // fade realtime shadows (at the tip of the last culling sphere)
+		shadow = min(baked, shadow); // merge realtime shadows with baked shadows
+		return lerp(1.0, shadow, strength); // adjust darkness of merged shadow per light
+	}
+	if (global.shadowMask.distance) {
+		shadow = lerp(baked, shadow, global.strength); // fade between baked and realtime shadows; when strength is 0, we've reached end of culling spheres and must use baked shadows
+		return lerp(1.0, shadow, strength); // we adjust the computed shadow per light
+	}
+	return lerp(1.0, shadow, strength);
+}
+
+
+
+float GetDirectionalShadowAttenuation (DirectionalShadowData directional, ShadowData global, Surface surfaceWS) { // sample the right position of the shadow map
+	#if !defined(_RECEIVE_SHADOWS)
+		return 1.0;
+	#endif
+	float shadow;
+	if (directional.strength * global.strength <= 0.0) { // when directional strength < 0, we sample the shadow mask (baked). Otherwise we sample the shadow map (realtime)
+		shadow = GetBakedShadow(global.shadowMask, abs(directional.strength));
+	} else {
+		shadow = GetCascadedShadow(directional, global, surfaceWS);
+		shadow = MixBakedAndRealtimeShadows(global, shadow, directional.strength);
+	}
+	
+	return shadow;
 }
 
 #endif

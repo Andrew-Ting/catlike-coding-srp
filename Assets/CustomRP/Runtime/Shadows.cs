@@ -59,6 +59,13 @@ public class Shadows
         "_CASCADE_BLEND_SOFT",
         "_CASCADE_BLEND_DITHER"
     };
+
+    static string[] shadowMaskKeywords = {
+        "_SHADOW_MASK_ALWAYS",
+        "_SHADOW_MASK_DISTANCE"
+    };
+
+    bool useShadowMask;
     public void Setup(
         ScriptableRenderContext context, CullingResults cullingResults,
         ShadowSettings settings
@@ -68,6 +75,7 @@ public class Shadows
         this.cullingResults = cullingResults;
         this.settings = settings;
         ShadowedDirectionalLightCount = 0;
+        useShadowMask = false;
     }
 
     void SetKeywords(string[] keywords, int enabledIndex) {
@@ -140,6 +148,11 @@ public class Shadows
                 32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap
             );
         }
+        buffer.BeginSample(bufferName);
+        SetKeywords(shadowMaskKeywords, useShadowMask ? 
+            QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1); // we need to set the keyword even when not rendering realtime shadows, because shadow masks aren't realtime
+        buffer.EndSample(bufferName);
+        ExecuteBuffer();
     }
 
     void RenderDirectionalShadows() {
@@ -239,9 +252,24 @@ public class Shadows
 
     public Vector3 ReserveDirectionalShadows(Light light, int visibleLightIndex) { // reserves space in the shadow atlas for the light shadow map and store information to render it
         if (ShadowedDirectionalLightCount < maxShadowedDirectionalLightCount &&
-            light.shadows != LightShadows.None && light.shadowStrength > 0f &&
-            cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b)) // don't render shadows for cameras where strength is 0 or shadow set to "None," or if we hit shadow limit, or if the light only affects objects beyond max shadow distance (GetShadowCasterBounds)
-        { // GetShadowCasterBounds returns true when the bounds are valid. It is invalid when there are no shadows to render for the light
+            light.shadows != LightShadows.None && light.shadowStrength > 0f) // don't render shadows for cameras where strength is 0 or shadow set to "None," or if we hit shadow limit, or if the light only affects objects beyond max shadow distance (GetShadowCasterBounds)
+        { 
+            LightBakingOutput lightBaking = light.bakingOutput;
+            if (
+                lightBaking.lightmapBakeType == LightmapBakeType.Mixed &&
+                lightBaking.mixedLightingMode == MixedLightingMode.Shadowmask
+            ) // shadow masks only used when shadow mask is enabled for mixed lights
+            {
+                useShadowMask = true;
+            }
+
+            if (!cullingResults.GetShadowCasterBounds(
+                visibleLightIndex, out Bounds b
+            )) // GetShadowCasterBounds returns true when the bounds are valid. It is invalid when there are no shadows to render for the light in the culling spheres, in which case we sample baked shadows
+            { // only need shadow strength when there are no realtime shadows in the culling spheres, since we're just reading the shadow mask
+                return new Vector3(-light.shadowStrength, 0f, 0f);
+            }
+
             ShadowedDirectionalLights[ShadowedDirectionalLightCount] =
                 new ShadowedDirectionalLight
                 {
