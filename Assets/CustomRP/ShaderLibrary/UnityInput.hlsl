@@ -5,7 +5,7 @@
 CBUFFER_START(UnityPerDraw)
 float4x4 unity_ObjectToWorld;  // set once per draw, remaining constant during that draw
 float4x4 unity_WorldToObject;
-float4 unity_LODFade; // necessary to make SRP batcher compatible. Otherwise "builtin property offset in cbuffer overlap other stages (UnityPerDraw) is returned"
+float4 unity_LODFade; // necessary to make SRP batcher compatible. Otherwise "builtin property offset in cbuffer overlap other stages (UnityPerDraw)" is returned; stores the fade value of LOD groups
 real4 unity_WorldTransformParams;
 
 float4 unity_ProbesOcclusion; // contains the shadow mask data interpolated across light probes, which Unity calls "occlusion probes"
