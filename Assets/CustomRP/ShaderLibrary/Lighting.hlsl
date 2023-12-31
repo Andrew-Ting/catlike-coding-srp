@@ -13,7 +13,7 @@ float3 GetLighting (Surface surfaceWS, BRDF brdf, GI gi) {
 	ShadowData shadowData = GetShadowData(surfaceWS);
 	shadowData.shadowMask = gi.shadowMask; // copy global illumination shadow mask to the general fragment shadow data
 	// return gi.shadowMask.shadows.rgb;
-	float3 color = gi.diffuse * brdf.diffuse; // multiply baked indirect lighting color computation (GI) with realtime computed diffuse reflectivity from brdf to produce final fragment color
+	float3 color = IndirectBRDF(surfaceWS, brdf, gi.diffuse, gi.specular);
 	for (int i = 0; i < GetDirectionalLightCount(); i++) {
 		Light light = GetDirectionalLight(i, surfaceWS, shadowData);
 		color += GetLighting(surfaceWS, brdf, light);

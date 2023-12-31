@@ -61,7 +61,7 @@ public partial class CameraRenderer
         {
             enableDynamicBatching = useDynamicBatching,
             enableInstancing = useGPUInstancing,
-            perObjectData = PerObjectData.Lightmaps | PerObjectData.LightProbe | PerObjectData.ShadowMask | PerObjectData.OcclusionProbe |
+            perObjectData = PerObjectData.ReflectionProbes | PerObjectData.Lightmaps | PerObjectData.LightProbe | PerObjectData.ShadowMask | PerObjectData.OcclusionProbe |
                 PerObjectData.LightProbeProxyVolume | // instructs the pipeline to send UV coords for light maps and light probes to the shaders; lightmapped objects have the LIGHTMAP_ON keyword in their shader variant
                 PerObjectData.OcclusionProbeProxyVolume
         };

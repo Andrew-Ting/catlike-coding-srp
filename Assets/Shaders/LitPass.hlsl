@@ -1,8 +1,8 @@
 #include "../CustomRP/ShaderLibrary/Surface.hlsl"
 #include "../CustomRP/ShaderLibrary/Shadows.hlsl"
-#include "../CustomRP/ShaderLibrary/GI.hlsl"
 #include "../CustomRP/ShaderLibrary/Light.hlsl"
 #include "../CustomRP/ShaderLibrary/BRDF.hlsl"
+#include "../CustomRP/ShaderLibrary/GI.hlsl"
 #include "../CustomRP/ShaderLibrary/Lighting.hlsl"
 
 #ifndef CUSTOM_LIT_PASS_INCLUDED
@@ -76,6 +76,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
 	surface.alpha = base.a;
 	surface.metallic = GetMetallic(input.baseUV);
 	surface.smoothness = GetSmoothness(input.baseUV);
+	surface.fresnelStrength = GetFresnel(input.baseUV);
 	surface.dither = InterleavedGradientNoise(input.positionCS.xy, 0); // InterleavedGradientNoise comes from the Core RP library, and its first param is the screen-space XY position (which = clip space XY position in the fragment shader). Second param is to animate the noise over time (static is zero)
 	#if defined(_PREMULTIPLY_ALPHA)
 		BRDF brdf = GetBRDF(surface, true);
@@ -84,7 +85,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
 	#endif
 	surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
 	surface.depth = -TransformWorldToView(input.positionWS).z;
-	GI gi = GetGI(GI_FRAGMENT_DATA(input), surface);
+	GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
 	float3 color = GetLighting(surface, brdf, gi);
 	color += GetEmission(input.baseUV);
 	return float4(color, surface.alpha);
