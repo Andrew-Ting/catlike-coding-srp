@@ -11,11 +11,20 @@ Shader "Custom RP/Lit" {
 		[Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0 // defining Toggle(keyword) creates a shader keyword. Enabling the toggle adds it to list of material's active keywords, which can be checked with compiler ifs after defining the pragma.
 		[Toggle(_PREMULTIPLY_ALPHA)] _PremulAlpha ("Premultiply Alpha", Float) = 0
 		[Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
+		[NoScaleOffset] _MaskMap("Mask (MODS)", 2D) = "white" {}
 		_Metallic ("Metallic", Range(0, 1)) = 0
+		_Occlusion ("Occlusion", Range(0, 1)) = 1
 		_Smoothness ("Smoothness", Range(0, 1)) = 0.5
 		_Fresnel ("Fresnel", Range(0, 1)) = 1
 		[NoScaleOffset] _EmissionMap("Emission", 2D) = "white" {}
 		[HDR] _EmissionColor("Emission", Color) = (0.0, 0.0, 0.0, 0.0)
+		_DetailMap("Details", 2D) = "linearGrey" {}
+		[NoScaleOffset] _DetailNormalMap("Detail Normals", 2D) = "bump" {}
+		_DetailAlbedo("Detail Albedo", Range(0, 1)) = 1 // strength of detail map
+		_DetailSmoothness("Detail Smoothness", Range(0, 1)) = 1 // strength of smoothness map
+		[NoScaleOffset] _NormalMap("Normals", 2D) = "bump" {}
+		_NormalScale("Normal Scale", Range(0, 1)) = 1
+		_DetailNormalScale("Detail Normal Scale", Range(0, 1)) = 1
 
 		// textures necessary to support transparency baking since Unity hard codes it
 		[HideInInspector] _MainTex("Texture for Lightmap", 2D) = "white" {}

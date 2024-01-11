@@ -38,8 +38,9 @@ float3 IndirectBRDF (
 	float3 reflection = specular * lerp(brdf.specular, brdf.fresnel, fresnelStrength);
 	reflection /= brdf.roughness * brdf.roughness + 1.0; // low roughness doesn't affect reflection but max roughness halves reflection
 
-	 // multiply baked indirect lighting color computation (GI) with realtime computed diffuse reflectivity from brdf, then add reflecions to produce final fragment color
-    return diffuse * brdf.diffuse + reflection;
+	 // multiply baked indirect lighting color computation (GI) with realtime computed diffuse reflectivity from brdf, then add reflecions 
+	 // finally modulate this with texture read occlusion to darken indirect light in tight spaces and produce final fragment color (by indirect light; direct light is not influenced by occlusion data as tight spaces are still lit when hit by light directly)
+    return (diffuse * brdf.diffuse + reflection) * surface.occlusion;
 }
 
 BRDF GetBRDF (Surface surface, bool applyAlphaToDiffuse = false) {
