@@ -12,7 +12,7 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 	UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
-float GetFresnel (float2 baseUV) {
+float GetFresnel (InputConfig c) {
 	return 0.0;
 }
 
@@ -21,26 +21,26 @@ float2 TransformBaseUV (float2 baseUV) {
 	return baseUV * baseST.xy + baseST.zw; // xy contains scale, zw contains offset
 }
 
-float4 GetBase (float2 baseUV) {
-	float4 map = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, baseUV);
+float4 GetBase (InputConfig c) {
+	float4 map = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, c.baseUV);
 	float4 color = INPUT_PROP(_BaseColor);
 	return map * color;
 }
 
-float GetCutoff (float2 baseUV) {
+float GetCutoff (InputConfig c) {
 	return INPUT_PROP(_Cutoff);
 }
 
-float GetMetallic (float2 baseUV) {
+float GetMetallic (InputConfig c) {
 	return 0.0;
 }
 
-float GetSmoothness (float2 baseUV) {
+float GetSmoothness (InputConfig c) {
 	return 0.0;
 }
 
-float3 GetEmission (float2 baseUV) { // baking an unlit object emits its full color (since it just returns the base texture)
-	return GetBase(baseUV).rgb;
+float3 GetEmission (InputConfig c) { // baking an unlit object emits its full color (since it just returns the base texture)
+	return GetBase(c).rgb;
 }
 
 #endif

@@ -13,6 +13,7 @@ Shader "Custom RP/Unlit" {
 	SubShader {
 		HLSLINCLUDE
 		#include "../CustomRP/ShaderLibrary/Common.hlsl"
+		#include "../CustomRP/ShaderLibrary/InputConfig.hlsl"
 		#include "UnlitInput.hlsl"
 		ENDHLSL
 		Pass {

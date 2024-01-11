@@ -43,9 +43,13 @@ struct Varyings {
 	float4 positionCS : SV_POSITION;
 	float3 positionWS : VAR_POSITION;
 	float3 normalWS : VAR_NORMAL;
-	float4 tangentWS : VAR_TANGENT;
+	#if defined(_NORMAL_MAP)
+		float4 tangentWS : VAR_TANGENT;
+	#endif
 	float2 baseUV : VAR_BASE_UV; // can apply any unused identifier as this is just a passed along value (requires no special attention). "VAR_BASE_UV" is arbitrary
-	float2 detailUV : VAR_DETAIL_UV;
+	#if defined(_DETAIL_MAP)
+		float2 detailUV : VAR_DETAIL_UV;
+	#endif
 	GI_VARYINGS_DATA
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
@@ -59,34 +63,52 @@ Varyings LitPassVertex(Attributes input)  {
 	output.positionWS = TransformObjectToWorld(input.positionOS.xyz);
 	output.positionCS = TransformWorldToHClip(output.positionWS);
 	output.normalWS = TransformObjectToWorldNormal(input.normalOS);
-	output.tangentWS =
-		float4(TransformObjectToWorldDir(input.tangentOS.xyz), input.tangentOS.w);
+	#if defined(_NORMAL_MAP)
+		output.tangentWS =
+			float4(TransformObjectToWorldDir(input.tangentOS.xyz), input.tangentOS.w);
+	#endif
 	float4 baseST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseMap_ST);
 	output.baseUV = TransformBaseUV(input.baseUV); 
-	output.detailUV = TransformDetailUV(input.baseUV);
+	#if defined(_DETAIL_MAP)
+		output.detailUV = TransformDetailUV(input.baseUV);
+	#endif
 	return output;
 }
 
 float4 LitPassFragment(Varyings input) : SV_TARGET {
 	UNITY_SETUP_INSTANCE_ID(input);
 	ClipLOD(input.positionCS.xy, unity_LODFade.x);
-	float4 base = GetBase(input.baseUV, input.detailUV);
+	InputConfig config = GetInputConfig(input.baseUV);
+	#if defined(_MASK_MAP)
+		config.useMask = true;
+	#endif
+	#if defined(_DETAIL_MAP)
+		config.detailUV = input.detailUV;
+		config.useDetail = true;
+	#endif
+
+	float4 base = GetBase(config);
 	#if defined(_CLIPPING)
-		clip(base.a - GetCutoff(input.baseUV));
+		clip(base.a - GetCutoff(config));
 	#endif
 
 	Surface surface;
 	surface.position = input.positionWS;
-	surface.normal = NormalTangentToWorld(
-		GetNormalTS(input.baseUV, input.detailUV), input.normalWS, input.tangentWS
-	);
-	surface.interpolatedNormal = input.normalWS;
+	#if defined(_NORMAL_MAP)
+		surface.normal = NormalTangentToWorld(
+			GetNormalTS(config), input.normalWS, input.tangentWS
+		);
+		surface.interpolatedNormal = input.normalWS;
+	#else
+		surface.normal = normalize(input.normalWS);
+		surface.interpolatedNormal = surface.normal;
+	#endif
 	surface.color = base.rgb;
 	surface.alpha = base.a;
-	surface.metallic = GetMetallic(input.baseUV);
-	surface.occlusion = GetOcclusion(input.baseUV);
-	surface.smoothness = GetSmoothness(input.baseUV, input.detailUV);
-	surface.fresnelStrength = GetFresnel(input.baseUV);
+	surface.metallic = GetMetallic(config);
+	surface.occlusion = GetOcclusion(config);
+	surface.smoothness = GetSmoothness(config);
+	surface.fresnelStrength = GetFresnel(config);
 	surface.dither = InterleavedGradientNoise(input.positionCS.xy, 0); // InterleavedGradientNoise comes from the Core RP library, and its first param is the screen-space XY position (which = clip space XY position in the fragment shader). Second param is to animate the noise over time (static is zero)
 	#if defined(_PREMULTIPLY_ALPHA)
 		BRDF brdf = GetBRDF(surface, true);
@@ -97,7 +119,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET {
 	surface.depth = -TransformWorldToView(input.positionWS).z;
 	GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
 	float3 color = GetLighting(surface, brdf, gi);
-	color += GetEmission(input.baseUV);
+	color += GetEmission(config);
 	return float4(color, surface.alpha);
 }
 
