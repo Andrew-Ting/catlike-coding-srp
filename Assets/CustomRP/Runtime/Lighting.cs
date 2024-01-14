@@ -4,7 +4,7 @@ using UnityEngine.Rendering;
 
 public class Lighting
 {
-    const int maxDirLightCount = 4;
+    const int maxDirLightCount = 4, maxOtherLightCount = 64;
     const string bufferName = "Lighting";
     static int
         dirLightCountId = Shader.PropertyToID("_DirectionalLightCount"),
@@ -18,6 +18,15 @@ public class Lighting
         dirLightDirections = new Vector4[maxDirLightCount],
         dirLightShadowData = new Vector4[maxDirLightCount];
     CullingResults cullingResults;
+
+    static int
+        otherLightCountId = Shader.PropertyToID("_OtherLightCount"),
+        otherLightColorsId = Shader.PropertyToID("_OtherLightColors"),
+        otherLightPositionsId = Shader.PropertyToID("_OtherLightPositions");
+
+    static Vector4[]
+        otherLightColors = new Vector4[maxOtherLightCount],
+        otherLightPositions = new Vector4[maxOtherLightCount];
 
     Shadows shadows = new Shadows();
 
@@ -41,24 +50,43 @@ public class Lighting
     {
 
         NativeArray<VisibleLight> visibleLights = cullingResults.visibleLights;
-        int dirLightCount = 0;
+        int dirLightCount = 0, otherLightCount = 0;
         for (int i = 0; i < visibleLights.Length; i++)
         {
             VisibleLight visibleLight = visibleLights[i];
-            if (visibleLight.lightType == LightType.Directional) // only support directionall lights
+            switch (visibleLight.lightType)
             {
-                SetupDirectionalLight(dirLightCount++, ref visibleLight);
-                if (dirLightCount >= maxDirLightCount)
-                {
+                case LightType.Directional:
+                    if (dirLightCount < maxDirLightCount)
+                    {
+                        SetupDirectionalLight(dirLightCount++, ref visibleLight);
+                    }
                     break;
-                }
+                case LightType.Point:
+                    if (otherLightCount < maxOtherLightCount)
+                    {
+                        SetupPointLight(otherLightCount++, ref visibleLight);
+                    }
+                    break;
             }
         }
 
         buffer.SetGlobalInt(dirLightCountId, visibleLights.Length);
-        buffer.SetGlobalVectorArray(dirLightColorsId, dirLightColors);
-        buffer.SetGlobalVectorArray(dirLightDirectionsId, dirLightDirections);
-        buffer.SetGlobalVectorArray(dirLightShadowDataId, dirLightShadowData);
+        if (dirLightCount > 0)
+        {
+            buffer.SetGlobalVectorArray(dirLightColorsId, dirLightColors);
+            buffer.SetGlobalVectorArray(dirLightDirectionsId, dirLightDirections);
+            buffer.SetGlobalVectorArray(dirLightShadowDataId, dirLightShadowData);
+        }
+
+        buffer.SetGlobalInt(otherLightCountId, otherLightCount);
+        if (otherLightCount > 0)
+        {
+            buffer.SetGlobalVectorArray(otherLightColorsId, otherLightColors);
+            buffer.SetGlobalVectorArray(
+                otherLightPositionsId, otherLightPositions
+            );
+        }
     }
     void SetupDirectionalLight(int index, ref VisibleLight visibleLight) {
         // Light light = RenderSettings.sun; // stores the position of the most important directional light by default; editable in Window > Rendering > Lighting Settings
@@ -69,6 +97,14 @@ public class Lighting
         dirLightDirections[index] = -visibleLight.localToWorldMatrix.GetColumn(2); // gets the forward vector of the light (i.e. position relative to object)
         dirLightShadowData[index] =
             shadows.ReserveDirectionalShadows(visibleLight.light, index);
+    }
+    void SetupPointLight(int index, ref VisibleLight visibleLight)
+    {
+        otherLightColors[index] = visibleLight.finalColor;
+        Vector4 position = visibleLight.localToWorldMatrix.GetColumn(3);
+        position.w =
+            1f / Mathf.Max(visibleLight.range * visibleLight.range, 0.00001f);
+        otherLightPositions[index] = position;
     }
 
     public void Cleanup()
