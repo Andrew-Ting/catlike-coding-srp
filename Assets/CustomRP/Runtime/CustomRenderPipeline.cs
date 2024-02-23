@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-public class CustomRenderPipeline : RenderPipeline
+public partial class CustomRenderPipeline : RenderPipeline
 {
     CameraRenderer renderer = new CameraRenderer();
     bool useDynamicBatching, useGPUInstancing;
@@ -14,6 +14,7 @@ public class CustomRenderPipeline : RenderPipeline
         this.shadowSettings = shadowSettings;
         GraphicsSettings.useScriptableRenderPipelineBatching = false;
         GraphicsSettings.lightsUseLinearIntensity = true;
+        InitializeForEditor();
     }
     // legacy, but still required as Unity defines the abstract class of this
     protected override void Render(

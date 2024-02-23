@@ -243,7 +243,7 @@ public class Shadows
         cascadeCullingSpheres[index] = cullingSphere;
     }
 
-    public Vector4 ReserveDirectionalShadows(Light light, int visibleLightIndex) { // reserves space in the shadow atlas for the light shadow map and store information to render it
+    public Vector4 ReserveDirectionalShadows(Light light, int visibleLightIndex) { // reserves space in the shadow atlas for the light's shadow map and stores information to render it
         if (ShadowedDirectionalLightCount < maxShadowedDirectionalLightCount &&
             light.shadows != LightShadows.None && light.shadowStrength > 0f) // don't render shadows for cameras where strength is 0 or shadow set to "None," or if we hit shadow limit, or if the light only affects objects beyond max shadow distance (GetShadowCasterBounds)
         {
@@ -276,6 +276,26 @@ public class Shadows
                 light.shadowStrength, settings.directional.cascadeCount * ShadowedDirectionalLightCount++,
                 light.shadowNormalBias, maskChannel
             );
+        }
+        return new Vector4(0f, 0f, 0f, -1f);
+    }
+
+    public Vector4 ReserveOtherShadows(Light light, int visibleLightIndex)
+    {
+        if (light.shadows != LightShadows.None && light.shadowStrength > 0f)
+        {
+            LightBakingOutput lightBaking = light.bakingOutput;
+            if (
+                lightBaking.lightmapBakeType == LightmapBakeType.Mixed &&
+                lightBaking.mixedLightingMode == MixedLightingMode.Shadowmask
+            )
+            {
+                useShadowMask = true;
+                return new Vector4(
+                    light.shadowStrength, 0f, 0f,
+                    lightBaking.occlusionMaskChannel
+                );
+            }
         }
         return new Vector4(0f, 0f, 0f, -1f);
     }
